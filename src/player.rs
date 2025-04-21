@@ -27,6 +27,7 @@ pub enum PlayerState {
 }
 
 #[derive(Component)]
+#[require(resolution::Position)]
 struct Player {
     direction: PlayerDirection,
     state: PlayerState,
@@ -54,41 +55,35 @@ fn setup_player(
 }
 
 fn update_player(
-    mut query: Query<(&mut Player, &mut Transform)>,
+    mut query: Query<(&mut Player, &mut resolution::Position)>,
     time: Res<Time>,
     keys: Res<ButtonInput<KeyCode>>,
     resolution: Res<resolution::Resolution>,
 ) {
-    for (mut player, mut transform) in query.iter_mut() {
+    for (mut player, mut position) in query.iter_mut() {
         let mut pressed = false;
         if keys.pressed(KeyCode::KeyW) {
-            transform.translation.y += PLAYER_SPEED * time.delta_secs();
+            position.0.y -= PLAYER_SPEED * time.delta_secs();
             player.direction = PlayerDirection::Up;
             pressed = true;
         }
         if keys.pressed(KeyCode::KeyA) {
-            transform.translation.x -= PLAYER_SPEED * time.delta_secs();
+            position.0.x -= PLAYER_SPEED * time.delta_secs();
             player.direction = PlayerDirection::Left;
             pressed = true;
         }
         if keys.pressed(KeyCode::KeyS) {
-            transform.translation.y -= PLAYER_SPEED * time.delta_secs();
+            position.0.y += PLAYER_SPEED * time.delta_secs();
             player.direction = PlayerDirection::Down;
             pressed = true;
         }
         if keys.pressed(KeyCode::KeyD) {
-            transform.translation.x += PLAYER_SPEED * time.delta_secs();
+            position.0.x += PLAYER_SPEED * time.delta_secs();
             player.direction = PlayerDirection::Right;
             pressed = true;
         }
-        if transform.translation.x.abs() >= resolution.screen_dimensions.x / 2. {
-            transform.translation.x =
-                resolution.screen_dimensions.x / 2. * transform.translation.x.signum()
-        }
-        if transform.translation.y.abs() >= resolution.screen_dimensions.y / 2. {
-            transform.translation.y =
-                resolution.screen_dimensions.y / 2. * transform.translation.y.signum()
-        }
+        position.0.x = position.0.x.clamp(0., resolution.screen_dimensions.x);
+        position.0.y = position.0.y.clamp(0., resolution.screen_dimensions.y);
 
         if pressed {
             player.state = PlayerState::Moving;
