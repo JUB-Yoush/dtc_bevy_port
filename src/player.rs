@@ -1,4 +1,4 @@
-use crate::resolution;
+use crate::resolution::*;
 use bevy::{input::keyboard::Key, math::VectorSpace, prelude::*};
 use bevy_aseprite_ultra::prelude::*;
 
@@ -27,17 +27,13 @@ pub enum PlayerState {
 }
 
 #[derive(Component)]
-#[require(resolution::Position)]
+#[require(Position)]
 struct Player {
     direction: PlayerDirection,
     state: PlayerState,
 }
 
-fn setup_player(
-    mut cmd: Commands,
-    asset_server: Res<AssetServer>,
-    resolution: Res<resolution::Resolution>,
-) {
+fn setup_player(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: Res<Resolution>) {
     cmd.spawn((
         Player {
             direction: PlayerDirection::Right,
@@ -55,10 +51,10 @@ fn setup_player(
 }
 
 fn update_player(
-    mut query: Query<(&mut Player, &mut resolution::Position)>,
+    mut query: Query<(&mut Player, &mut Position)>,
     time: Res<Time>,
     keys: Res<ButtonInput<KeyCode>>,
-    resolution: Res<resolution::Resolution>,
+    resolution: Res<Resolution>,
 ) {
     for (mut player, mut position) in query.iter_mut() {
         let mut pressed = false;

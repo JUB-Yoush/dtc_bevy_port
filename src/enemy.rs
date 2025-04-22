@@ -1,4 +1,5 @@
 use crate::resolution::*;
+use bevy::ecs::entity;
 use bevy::time::common_conditions::*;
 use bevy::utils::Duration;
 use bevy::{input::keyboard::Key, math::VectorSpace, prelude::*};
@@ -8,19 +9,35 @@ use rand::seq::IndexedRandom;
 use rand::seq::SliceRandom;
 use rand::{random_range, rng, Rng};
 
-//
 pub struct EnemyPlugin;
-
-const MIN_SPEED: f32 = 100.0;
-const MAX_SPEED: f32 = 300.0;
 
 //#[require(Transform(|| Transform::from_xyz(0.,0.,0.)))]
 #[derive(Component)]
 #[require(Position)]
 struct Enemy {
-    velocity: Vec2,
+    direction: Vec2,
     speed: f32,
 }
+
+impl Plugin for EnemyPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            (
+                spawn_enemy.run_if(on_timer(Duration::from_secs(1))),
+                update_enemy,
+                out_of_bounds.after(update_enemy),
+            ),
+        )
+        .add_event::<OutOfBounds>();
+    }
+}
+
+const MIN_SPEED: f32 = 100.0;
+const MAX_SPEED: f32 = 400.0;
+
+#[derive(Event)]
+struct OutOfBounds(Entity);
 
 #[derive(Debug)]
 enum SpawnEdge {
@@ -40,12 +57,6 @@ impl Distribution<SpawnEdge> for StandardUniform {
     }
 }
 
-impl Plugin for EnemyPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Update, spawn_enemy.run_if(on_timer(Duration::from_secs(1))));
-    }
-}
-
 const ENEMY_TYPES: [&str; 3] = [
     "enemy_walk.aseprite",
     "enemy_swim.aseprite",
@@ -55,25 +66,73 @@ const ENEMY_TYPES: [&str; 3] = [
 fn spawn_enemy(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: Res<Resolution>) {
     let mut rng = rng();
     if let Some(enemy_type) = ENEMY_TYPES.choose(&mut rng) {
-        let lmao: SpawnEdge = rand::random();
+        let spawnedge: SpawnEdge = rand::random();
         cmd.spawn((
             AseSpriteAnimation {
                 aseprite: asset_server.load(*enemy_type),
                 animation: Animation::tag("move"),
             },
             Enemy {
-                velocity: Vec2::new(0., 0.), // do the enum pattern matching wrapped whatever the
+                direction: {
+                    match spawnedge {
+                        SpawnEdge::Top => {
+                            Vec2::new(random_range(-1.0..1.0), random_range(0.0..1.0))
+                        }
+                        SpawnEdge::Bottom => {
+                            Vec2::new(random_range(-1.0..1.0), random_range(-1.0..0.0))
+                        }
+                        SpawnEdge::Left => {
+                            Vec2::new(random_range(0.0..1.0), random_range(-1.0..1.0))
+                        }
+                        SpawnEdge::Right => {
+                            Vec2::new(random_range(-1.0..0.0), random_range(-1.0..1.0))
+                        }
+                    }
+                    .normalize()
+                },
                 speed: rng.random_range(MIN_SPEED..MAX_SPEED),
             },
-            Position(Vec2::new(
-                random_range(0. ..resolution.screen_dimensions.x),
-                random_range(0. ..resolution.screen_dimensions.y),
-            )),
+            Position(match spawnedge {
+                SpawnEdge::Top => Vec2::new(random_range(0.0..resolution.screen_dimensions.x), 0.0),
+                SpawnEdge::Bottom => Vec2::new(
+                    random_range(0.0..resolution.screen_dimensions.x),
+                    resolution.screen_dimensions.y,
+                ),
+                SpawnEdge::Left => {
+                    Vec2::new(0.0, random_range(0.0..resolution.screen_dimensions.y))
+                }
+                SpawnEdge::Right => Vec2::new(
+                    resolution.screen_dimensions.x,
+                    random_range(0.0..resolution.screen_dimensions.y),
+                ),
+            }),
             Transform::from_xyz(0., 0., 0.).with_scale(Vec3::splat(resolution.pixel_ratio)),
             //   Transform::from_xyz(0., 0., 0.),
             Sprite {
                 ..Default::default()
             },
         ));
+    }
+}
+
+fn update_enemy(
+    mut query: Query<(Entity, &Enemy, &mut Position)>,
+    time: Res<Time>,
+    resolution: Res<Resolution>,
+    mut events: EventWriter<OutOfBounds>,
+) {
+    for (entity, enemy, mut position) in query.iter_mut() {
+        position.0.x += enemy.direction.x * enemy.speed * time.delta_secs();
+        position.0.y += enemy.direction.y * enemy.speed * time.delta_secs();
+
+        if position.0.x < 0.0 || position.0.x > resolution.screen_dimensions.x {
+            events.send(OutOfBounds(entity));
+        }
+    }
+}
+
+fn out_of_bounds(mut cmd: Commands, mut events: EventReader<OutOfBounds>) {
+    for event in events.read() {
+        cmd.entity(event.0).despawn();
     }
 }

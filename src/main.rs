@@ -8,15 +8,17 @@ pub mod resolution;
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins.set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: String::from("Dodge the Creeps"),
-                    position: WindowPosition::Centered(MonitorSelection::Primary),
-                    resolution: Vec2::new(480., 720.).into(),
+            DefaultPlugins
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: String::from("Dodge the Creeps"),
+                        position: WindowPosition::Centered(MonitorSelection::Primary),
+                        resolution: Vec2::new(480., 720.).into(),
+                        ..Default::default()
+                    }),
                     ..Default::default()
-                }),
-                ..Default::default()
-            }),
+                })
+                .set(ImagePlugin::default_nearest()),
             game::GamePlugin,
         ))
         .run();
