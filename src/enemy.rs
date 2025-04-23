@@ -6,14 +6,15 @@ use bevy::{input::keyboard::Key, math::VectorSpace, prelude::*};
 use bevy_aseprite_ultra::prelude::*;
 use rand::distr::{Distribution, StandardUniform};
 use rand::seq::IndexedRandom;
-use rand::seq::SliceRandom;
 use rand::{random_range, rng, Rng};
+
+use bevy_rapier2d::prelude::*;
 
 pub struct EnemyPlugin;
 
 //#[require(Transform(|| Transform::from_xyz(0.,0.,0.)))]
 #[derive(Component)]
-#[require(Position)]
+#[require(Position,Collider(|| Collider::cuboid(12.0,12.0)))]
 struct Enemy {
     direction: Vec2,
     speed: f32,
@@ -120,6 +121,7 @@ fn update_enemy(
     time: Res<Time>,
     resolution: Res<Resolution>,
     mut events: EventWriter<OutOfBounds>,
+    rapier_context: DefaultRapierContext,
 ) {
     for (entity, enemy, mut position) in query.iter_mut() {
         position.0.x += enemy.direction.x * enemy.speed * time.delta_secs();

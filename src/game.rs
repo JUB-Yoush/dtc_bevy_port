@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 use bevy_aseprite_ultra::AsepriteUltraPlugin;
+use bevy_rapier2d::plugin::*;
+use bevy_rapier2d::render::RapierDebugRenderPlugin;
 
 use crate::enemy;
 use crate::player;
@@ -13,8 +15,10 @@ impl Plugin for GamePlugin {
             .add_plugins(AsepriteUltraPlugin)
             .add_plugins((
                 resolution::ResolutionPlugin,
-                player::PlayerPlugin,
+                RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
+                RapierDebugRenderPlugin::default(),
                 enemy::EnemyPlugin,
+                player::PlayerPlugin,
             ));
     }
 }

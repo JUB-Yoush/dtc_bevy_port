@@ -1,6 +1,7 @@
 use crate::resolution::*;
 use bevy::{input::keyboard::Key, math::VectorSpace, prelude::*};
 use bevy_aseprite_ultra::prelude::*;
+use bevy_rapier2d::prelude::Collider;
 
 const PLAYER_SPEED: f32 = 500.;
 
@@ -27,7 +28,7 @@ pub enum PlayerState {
 }
 
 #[derive(Component)]
-#[require(Position)]
+#[require(Position, Collider(|| Collider::cuboid(4.0,4.0)))]
 struct Player {
     direction: PlayerDirection,
     state: PlayerState,
