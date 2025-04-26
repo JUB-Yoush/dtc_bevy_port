@@ -2,6 +2,7 @@ use crate::resolution::*;
 use bevy::{input::keyboard::Key, math::VectorSpace, prelude::*};
 use bevy_aseprite_ultra::prelude::*;
 use bevy_rapier2d::prelude::Collider;
+use bevy_rapier2d::prelude::*;
 
 const PLAYER_SPEED: f32 = 500.;
 
@@ -48,6 +49,7 @@ fn setup_player(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: R
         Sprite {
             ..Default::default()
         },
+        ActiveEvents::COLLISION_EVENTS,
     ));
 }
 

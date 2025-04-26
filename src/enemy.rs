@@ -27,6 +27,7 @@ impl Plugin for EnemyPlugin {
             (
                 spawn_enemy.run_if(on_timer(Duration::from_secs(1))),
                 update_enemy,
+                display_events,
                 out_of_bounds.after(update_enemy),
             ),
         )
@@ -113,46 +114,29 @@ fn spawn_enemy(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: Re
                 ..Default::default()
             },
             DefaultRapierContext,
+            //ActiveEvents::COLLISION_EVENTS,
+            Sensor,
         ));
     }
 }
 
 fn update_enemy(
-    mut query: Query<(
-        Entity,
-        &Enemy,
-        &mut Position,
-        &Collider,
-        &DefaultRapierContext,
-    )>,
+    mut query: Query<(Entity, &Enemy, &mut Position)>,
     time: Res<Time>,
     resolution: Res<Resolution>,
     mut events: EventWriter<OutOfBounds>,
 ) {
-    for (entity, enemy, mut position, collider, rapier_context) in query.iter_mut() {
-        let filter = QueryFilter {
-            exclude_collider: Some(entity),
-            ..default()
-        };
+    for (entity, enemy, mut position) in query.iter_mut() {
         position.0.x += enemy.direction.x * enemy.speed * time.delta_secs();
         position.0.y += enemy.direction.y * enemy.speed * time.delta_secs();
 
         if position.0.x < 0.0 || position.0.x > resolution.screen_dimensions.x {
             events.send(OutOfBounds(entity));
         }
-
-        rapier_context.intersections_with_shape(
-            transform.translation.truncate(),
-            transform.rotation.to_euler(EulerRot::ZYX).0,
-            collider,
-            filter,
-            |entity| {
-                println!("The entity {:?} intersects our shape.", entity);
-                true // Return `false` instead if we want to stop searching for other colliders that contain this point.
-            },
-        );
     }
 }
+
+fn display_events(mut query: Query<Entity, With<Sensor>>) {}
 
 fn out_of_bounds(mut cmd: Commands, mut events: EventReader<OutOfBounds>) {
     for event in events.read() {
