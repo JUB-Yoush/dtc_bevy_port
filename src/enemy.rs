@@ -12,7 +12,6 @@ use bevy_rapier2d::prelude::*;
 
 pub struct EnemyPlugin;
 
-//#[require(Transform(|| Transform::from_xyz(0.,0.,0.)))]
 #[derive(Component)]
 #[require(Position,Collider(|| Collider::cuboid(12.0,12.0)))]
 struct Enemy {
@@ -27,7 +26,6 @@ impl Plugin for EnemyPlugin {
             (
                 spawn_enemy.run_if(on_timer(Duration::from_secs(1))),
                 update_enemy,
-                display_events,
                 out_of_bounds.after(update_enemy),
             ),
         )
@@ -114,7 +112,7 @@ fn spawn_enemy(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: Re
                 ..Default::default()
             },
             DefaultRapierContext,
-            //ActiveEvents::COLLISION_EVENTS,
+            ActiveEvents::COLLISION_EVENTS,
             Sensor,
         ));
     }
@@ -135,8 +133,6 @@ fn update_enemy(
         }
     }
 }
-
-fn display_events(mut query: Query<Entity, With<Sensor>>) {}
 
 fn out_of_bounds(mut cmd: Commands, mut events: EventReader<OutOfBounds>) {
     for event in events.read() {
