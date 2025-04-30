@@ -1,8 +1,8 @@
 use crate::resolution::*;
 use bevy::{input::keyboard::Key, math::VectorSpace, prelude::*};
 use bevy_aseprite_ultra::prelude::*;
-use bevy_rapier2d::prelude::Collider;
 use bevy_rapier2d::prelude::*;
+use bevy_rapier2d::rapier::prelude::EventHandler;
 
 const PLAYER_SPEED: f32 = 500.;
 
@@ -29,7 +29,7 @@ pub enum PlayerState {
 }
 
 #[derive(Component)]
-#[require(Position, Collider(|| Collider::cuboid(4.0,4.0)))]
+#[require(Position, Collider(|| Collider::cuboid(5.0,5.0)))]
 struct Player {
     direction: PlayerDirection,
     state: PlayerState,
@@ -51,7 +51,6 @@ fn setup_player(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: R
         },
         ActiveEvents::COLLISION_EVENTS,
         DefaultRapierContext,
-        Sensor,
     ));
 }
 

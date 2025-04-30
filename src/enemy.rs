@@ -26,6 +26,7 @@ impl Plugin for EnemyPlugin {
             (
                 spawn_enemy.run_if(on_timer(Duration::from_secs(1))),
                 update_enemy,
+                check_collisions,
                 out_of_bounds.after(update_enemy),
             ),
         )
@@ -113,8 +114,27 @@ fn spawn_enemy(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: Re
             },
             DefaultRapierContext,
             ActiveEvents::COLLISION_EVENTS,
-            Sensor,
+            Collider::cuboid(12.0, 12.0),
         ));
+    }
+}
+
+fn check_collisions(mut collision_events: EventReader<CollisionEvent>) {
+    for event in collision_events.read() {
+        match event {
+            CollisionEvent::Started(collider1, collider2, _) => {
+                println!(
+                    "Collision started between {:?} and {:?}",
+                    collider1, collider2
+                );
+            }
+            CollisionEvent::Stopped(collider1, collider2, _) => {
+                println!(
+                    "Collision stopped between {:?} and {:?}",
+                    collider1, collider2
+                );
+            }
+        }
     }
 }
 
