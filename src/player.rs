@@ -29,7 +29,7 @@ pub enum PlayerState {
 }
 
 #[derive(Component)]
-#[require(Position, Collider(|| Collider::cuboid(5.0,5.0)))]
+#[require(Position)]
 struct Player {
     direction: PlayerDirection,
     state: PlayerState,
@@ -49,9 +49,6 @@ fn setup_player(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: R
         Sprite {
             ..Default::default()
         },
-        ActiveEvents::COLLISION_EVENTS,
-        DefaultRapierContext,
-        Sensor,
     ));
 }
 

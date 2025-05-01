@@ -15,8 +15,6 @@ impl Plugin for GamePlugin {
             .add_plugins(AsepriteUltraPlugin)
             .add_plugins((
                 resolution::ResolutionPlugin,
-                RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
-                RapierDebugRenderPlugin::default(),
                 enemy::EnemyPlugin,
                 player::PlayerPlugin,
             ));

@@ -1,5 +1,8 @@
+use std::time::Duration;
+
 use crate::resolution::*;
 use bevy::ecs::entity;
+use bevy::time::common_conditions::*;
 use bevy::time::*;
 use bevy::{input::keyboard::Key, math::VectorSpace, prelude::*};
 use bevy_aseprite_ultra::prelude::*;
@@ -23,7 +26,7 @@ impl Plugin for EnemyPlugin {
         app.add_systems(
             Update,
             (
-                spawn_enemy.run_if(Timer::from_seconds(1).finished()),
+                spawn_enemy.run_if(common_conditions::on_timer(Duration::from_secs(1))),
                 update_enemy,
                 out_of_bounds.after(update_enemy),
             ),
@@ -67,10 +70,10 @@ fn spawn_enemy(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: Re
     if let Some(enemy_type) = ENEMY_TYPES.choose(&mut rng) {
         let spawnedge: SpawnEdge = rand::random();
         cmd.spawn((
-            // AseSpriteAnimation {
-            //     aseprite: asset_server.load(*enemy_type),
-            //     animation: Animation::tag("move"),
-            // },
+            AseSpriteAnimation {
+                aseprite: asset_server.load(*enemy_type),
+                animation: Animation::tag("move"),
+            },
             Enemy {
                 direction: {
                     match spawnedge {
@@ -110,29 +113,7 @@ fn spawn_enemy(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: Re
             Sprite {
                 ..Default::default()
             },
-            DefaultRapierContext,
-            ActiveEvents::COLLISION_EVENTS,
-            //Collider::cuboid(12.0, 12.0),
         ));
-    }
-}
-
-fn check_collisions(mut collision_events: EventReader<CollisionEvent>) {
-    for event in collision_events.read() {
-        match event {
-            CollisionEvent::Started(collider1, collider2, _) => {
-                println!(
-                    "Collision started between {:?} and {:?}",
-                    collider1, collider2
-                );
-            }
-            CollisionEvent::Stopped(collider1, collider2, _) => {
-                println!(
-                    "Collision stopped between {:?} and {:?}",
-                    collider1, collider2
-                );
-            }
-        }
     }
 }
 
