@@ -19,7 +19,7 @@ pub struct Resolution {
 pub struct Position(pub Vec2);
 
 fn setup_resolution(mut commands: Commands, window_query: Query<&Window>) {
-    let window = window_query.single();
+    let window = window_query.single().expect("no window?");
     commands.insert_resource(Resolution {
         screen_dimensions: Vec2::new(window.width(), window.height()),
         pixel_ratio: 2.0,
@@ -28,7 +28,7 @@ fn setup_resolution(mut commands: Commands, window_query: Query<&Window>) {
 
 fn project_positions(mut query: Query<(&Position, &mut Transform)>, window_query: Query<&Window>) {
     //puts 0,0 at the top left like a 2d game engine
-    let window = window_query.single();
+    let window = window_query.single().expect("no window?");
     for (position, mut transform) in &mut query {
         transform.translation = position.0.extend(0.);
         transform.translation.y *= -1.;

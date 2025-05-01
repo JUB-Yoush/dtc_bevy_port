@@ -1,7 +1,6 @@
 use crate::resolution::*;
 use bevy::ecs::entity;
-use bevy::time::common_conditions::*;
-use bevy::utils::Duration;
+use bevy::time::*;
 use bevy::{input::keyboard::Key, math::VectorSpace, prelude::*};
 use bevy_aseprite_ultra::prelude::*;
 use rand::distr::{Distribution, StandardUniform};
@@ -13,7 +12,7 @@ use bevy_rapier2d::prelude::*;
 pub struct EnemyPlugin;
 
 #[derive(Component)]
-#[require(Position,Collider(|| Collider::cuboid(12.0,12.0)))]
+#[require(Position)]
 struct Enemy {
     direction: Vec2,
     speed: f32,
@@ -24,9 +23,8 @@ impl Plugin for EnemyPlugin {
         app.add_systems(
             Update,
             (
-                spawn_enemy.run_if(on_timer(Duration::from_secs(1))),
+                spawn_enemy.run_if(Timer::from_seconds(1).finished()),
                 update_enemy,
-                check_collisions,
                 out_of_bounds.after(update_enemy),
             ),
         )
@@ -69,10 +67,10 @@ fn spawn_enemy(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: Re
     if let Some(enemy_type) = ENEMY_TYPES.choose(&mut rng) {
         let spawnedge: SpawnEdge = rand::random();
         cmd.spawn((
-            AseSpriteAnimation {
-                aseprite: asset_server.load(*enemy_type),
-                animation: Animation::tag("move"),
-            },
+            // AseSpriteAnimation {
+            //     aseprite: asset_server.load(*enemy_type),
+            //     animation: Animation::tag("move"),
+            // },
             Enemy {
                 direction: {
                     match spawnedge {
@@ -114,7 +112,7 @@ fn spawn_enemy(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: Re
             },
             DefaultRapierContext,
             ActiveEvents::COLLISION_EVENTS,
-            Collider::cuboid(12.0, 12.0),
+            //Collider::cuboid(12.0, 12.0),
         ));
     }
 }

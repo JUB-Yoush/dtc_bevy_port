@@ -51,6 +51,7 @@ fn setup_player(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: R
         },
         ActiveEvents::COLLISION_EVENTS,
         DefaultRapierContext,
+        Sensor,
     ));
 }
 
