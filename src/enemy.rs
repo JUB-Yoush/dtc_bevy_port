@@ -1,7 +1,10 @@
 use std::time::Duration;
 
-use crate::resolution::*;
+use crate::resolution::Position as ScreenPosition;
+use crate::resolution::Resolution;
+use avian2d::prelude::*;
 use bevy::ecs::entity;
+
 use bevy::time::common_conditions::*;
 use bevy::time::*;
 use bevy::{input::keyboard::Key, math::VectorSpace, prelude::*};
@@ -10,12 +13,10 @@ use rand::distr::{Distribution, StandardUniform};
 use rand::seq::IndexedRandom;
 use rand::{random_range, rng, Rng};
 
-use bevy_rapier2d::prelude::*;
-
 pub struct EnemyPlugin;
 
 #[derive(Component)]
-#[require(Position)]
+#[require(ScreenPosition)]
 struct Enemy {
     direction: Vec2,
     speed: f32,
@@ -26,7 +27,7 @@ impl Plugin for EnemyPlugin {
         app.add_systems(
             Update,
             (
-                spawn_enemy.run_if(common_conditions::on_timer(Duration::from_secs(1))),
+                spawn_enemy.run_if(common_conditions::on_timer(Duration::from_millis(500))),
                 update_enemy,
                 out_of_bounds.after(update_enemy),
             ),
@@ -70,7 +71,10 @@ fn spawn_enemy(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: Re
     if let Some(enemy_type) = ENEMY_TYPES.choose(&mut rng) {
         let spawnedge: SpawnEdge = rand::random();
         cmd.spawn((
-            AseSpriteAnimation {
+            CollisionEventsEnabled,
+            CollidingEntities::default(),
+            Collider::circle(15.0),
+            AseAnimation {
                 aseprite: asset_server.load(*enemy_type),
                 animation: Animation::tag("move"),
             },
@@ -94,7 +98,7 @@ fn spawn_enemy(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: Re
                 },
                 speed: rng.random_range(MIN_SPEED..MAX_SPEED),
             },
-            Position(match spawnedge {
+            ScreenPosition(match spawnedge {
                 SpawnEdge::Top => Vec2::new(random_range(0.0..resolution.screen_dimensions.x), 0.0),
                 SpawnEdge::Bottom => Vec2::new(
                     random_range(0.0..resolution.screen_dimensions.x),
@@ -118,7 +122,7 @@ fn spawn_enemy(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: Re
 }
 
 fn update_enemy(
-    mut query: Query<(Entity, &Enemy, &mut Position)>,
+    mut query: Query<(Entity, &Enemy, &mut ScreenPosition)>,
     time: Res<Time>,
     resolution: Res<Resolution>,
     mut events: EventWriter<OutOfBounds>,

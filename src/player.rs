@@ -1,8 +1,8 @@
-use crate::resolution::*;
+use crate::resolution::Position as ScreenPosition;
+use crate::resolution::Resolution;
+use avian2d::prelude::*;
 use bevy::{input::keyboard::Key, math::VectorSpace, prelude::*};
 use bevy_aseprite_ultra::prelude::*;
-use bevy_rapier2d::prelude::*;
-use bevy_rapier2d::rapier::prelude::EventHandler;
 
 const PLAYER_SPEED: f32 = 500.;
 
@@ -10,8 +10,14 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_player)
-            .add_systems(Update, (update_player, animate_player));
+        app.add_systems(Startup, setup_player).add_systems(
+            Update,
+            (
+                update_player,
+                animate_player,
+                print_started_collisions.after(update_player),
+            ),
+        );
     }
 }
 
@@ -29,7 +35,7 @@ pub enum PlayerState {
 }
 
 #[derive(Component)]
-#[require(Position)]
+#[require(ScreenPosition)]
 struct Player {
     direction: PlayerDirection,
     state: PlayerState,
@@ -37,11 +43,14 @@ struct Player {
 
 fn setup_player(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: Res<Resolution>) {
     cmd.spawn((
+        CollisionEventsEnabled,
+        CollidingEntities::default(),
+        Collider::circle(15.0),
         Player {
             direction: PlayerDirection::Right,
             state: PlayerState::Idle,
         },
-        AseSpriteAnimation {
+        AseAnimation {
             aseprite: asset_server.load("player.aseprite"),
             animation: Animation::tag("idle"),
         },
@@ -53,7 +62,7 @@ fn setup_player(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: R
 }
 
 fn update_player(
-    mut query: Query<(&mut Player, &mut Position)>,
+    mut query: Query<(&mut Player, &mut ScreenPosition)>,
     time: Res<Time>,
     keys: Res<ButtonInput<KeyCode>>,
     resolution: Res<Resolution>,
@@ -92,7 +101,7 @@ fn update_player(
 }
 
 fn animate_player(
-    mut query: Query<(&mut Player, &mut AseSpriteAnimation, &mut Sprite)>,
+    mut query: Query<(&mut Player, &mut AseAnimation, &mut Sprite)>,
     time: Res<Time>,
     resolution: Res<AssetServer>,
 ) {
@@ -118,5 +127,14 @@ fn animate_player(
                 }
             },
         }
+    }
+}
+
+fn print_started_collisions(
+    mut cmd: Commands,
+    mut collision_event_reader: EventReader<CollisionStarted>,
+) {
+    for CollisionStarted(e1, e2) in collision_event_reader.read() {
+        //reset game, query players and enemies and reset them too.
     }
 }

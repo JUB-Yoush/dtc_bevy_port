@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+avian2d = "0.3.0"
 bevy = { version = "0.16", features = ["dynamic_linking"] }
 bevy-inspector-egui = "0.31.0"
-bevy_aseprite_ultra = "0.5"
-bevy_rapier2d = { version = "0.29.0", features = ["debug-render-2d"] }
+bevy_aseprite_ultra = "0.6"
 rand = "0.9.1"

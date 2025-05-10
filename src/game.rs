@@ -1,7 +1,7 @@
+use avian2d::prelude::PhysicsDebugPlugin;
+use avian2d::PhysicsPlugins;
 use bevy::prelude::*;
 use bevy_aseprite_ultra::AsepriteUltraPlugin;
-use bevy_rapier2d::plugin::*;
-use bevy_rapier2d::render::RapierDebugRenderPlugin;
 
 use crate::enemy;
 use crate::player;
@@ -14,6 +14,8 @@ impl Plugin for GamePlugin {
         app.add_systems(Startup, setup_scene)
             .add_plugins(AsepriteUltraPlugin)
             .add_plugins((
+                PhysicsPlugins::default(),
+                PhysicsDebugPlugin::default(),
                 resolution::ResolutionPlugin,
                 enemy::EnemyPlugin,
                 player::PlayerPlugin,
