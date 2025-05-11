@@ -1,3 +1,4 @@
+use crate::enemy::*;
 use crate::resolution::Position as ScreenPosition;
 use crate::resolution::Resolution;
 use avian2d::prelude::*;
@@ -43,6 +44,7 @@ struct Player {
 
 fn setup_player(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: Res<Resolution>) {
     cmd.spawn((
+        CollisionLayers::new(0b01, 0b10),
         CollisionEventsEnabled,
         CollidingEntities::default(),
         Collider::circle(15.0),
@@ -133,8 +135,17 @@ fn animate_player(
 fn print_started_collisions(
     mut cmd: Commands,
     mut collision_event_reader: EventReader<CollisionStarted>,
+    mut player_query: Query<(&mut Player, &mut ScreenPosition)>,
+    enemy_query: Query<(Entity, &mut Enemy)>,
 ) {
     for CollisionStarted(e1, e2) in collision_event_reader.read() {
         //reset game, query players and enemies and reset them too.
+        for (player, mut position) in player_query.iter_mut() {
+            position.0.x = (480 / 2) as f32;
+            position.0.y = (720 / 2) as f32;
+        }
+        for (id, _) in enemy_query.iter() {
+            cmd.entity(id).despawn();
+        }
     }
 }

@@ -17,7 +17,7 @@ pub struct EnemyPlugin;
 
 #[derive(Component)]
 #[require(ScreenPosition)]
-struct Enemy {
+pub struct Enemy {
     direction: Vec2,
     speed: f32,
 }
@@ -71,6 +71,7 @@ fn spawn_enemy(mut cmd: Commands, asset_server: Res<AssetServer>, resolution: Re
     if let Some(enemy_type) = ENEMY_TYPES.choose(&mut rng) {
         let spawnedge: SpawnEdge = rand::random();
         cmd.spawn((
+            CollisionLayers::new(0b10, 0b01),
             CollisionEventsEnabled,
             CollidingEntities::default(),
             Collider::circle(15.0),
