@@ -4,6 +4,7 @@ pub mod enemy;
 pub mod game;
 pub mod player;
 pub mod resolution;
+pub mod ui;
 
 fn main() {
     App::new()

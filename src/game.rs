@@ -2,10 +2,12 @@ use avian2d::prelude::PhysicsDebugPlugin;
 use avian2d::PhysicsPlugins;
 use bevy::prelude::*;
 use bevy_aseprite_ultra::AsepriteUltraPlugin;
+use bevy_cobweb_ui::prelude::*;
 
 use crate::enemy;
 use crate::player;
 use crate::resolution;
+use crate::ui;
 
 pub struct GamePlugin;
 
@@ -19,6 +21,8 @@ impl Plugin for GamePlugin {
                 resolution::ResolutionPlugin,
                 enemy::EnemyPlugin,
                 player::PlayerPlugin,
+                ui::UiPlugin,
+                CobwebUiPlugin,
             ));
     }
 }
