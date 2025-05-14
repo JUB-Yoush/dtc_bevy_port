@@ -17,7 +17,7 @@ impl Plugin for GamePlugin {
             .add_plugins(AsepriteUltraPlugin)
             .add_plugins((
                 PhysicsPlugins::default(),
-                PhysicsDebugPlugin::default(),
+                // PhysicsDebugPlugin::default(),
                 resolution::ResolutionPlugin,
                 enemy::EnemyPlugin,
                 player::PlayerPlugin,

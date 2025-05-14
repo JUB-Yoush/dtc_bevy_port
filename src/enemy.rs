@@ -133,7 +133,7 @@ fn update_enemy(
         position.0.y += enemy.direction.y * enemy.speed * time.delta_secs();
 
         if position.0.x < 0.0 || position.0.x > resolution.screen_dimensions.x {
-            events.send(OutOfBounds(entity));
+            events.write(OutOfBounds(entity));
         }
     }
 }

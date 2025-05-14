@@ -19,6 +19,7 @@ impl Plugin for PlayerPlugin {
                 print_started_collisions.after(update_player),
             ),
         );
+        app.add_event::<Hit>();
     }
 }
 
@@ -34,6 +35,9 @@ pub enum PlayerState {
     Idle,
     Moving,
 }
+
+#[derive(Event)]
+pub struct Hit;
 
 #[derive(Component)]
 #[require(ScreenPosition)]
@@ -137,9 +141,12 @@ fn print_started_collisions(
     mut collision_event_reader: EventReader<CollisionStarted>,
     mut player_query: Query<(&mut Player, &mut ScreenPosition)>,
     enemy_query: Query<(Entity, &mut Enemy)>,
+    mut events: EventWriter<Hit>,
 ) {
     for CollisionStarted(e1, e2) in collision_event_reader.read() {
         //reset game, query players and enemies and reset them too.
+        //
+        events.write(Hit);
         for (player, mut position) in player_query.iter_mut() {
             position.0.x = (480 / 2) as f32;
             position.0.y = (720 / 2) as f32;
